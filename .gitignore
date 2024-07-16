@@ -11,7 +11,7 @@ build
 logs
 /src/temp/
 .DS_Store
-.env.development
+# .env.development
 
 
 prisma/docker-compose.local.yml
