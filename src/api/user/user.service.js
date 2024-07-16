@@ -11,52 +11,46 @@ export default class UserService {
   async SignUp(userInfo) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 입력 정보 파싱 및 정리
       const { id, pw, age, name } = userInfo;
       const ageInt = parseInt(age, 10);
       const cleanId = id.trim().replace(/\u200B/g, '');
       const cleanPw = pw.trim().replace(/\u200B/g, '');
       const cleanName = name.trim().replace(/\u200B/g, '');
 
-      // 입력된 정보의 유효성 검사
       if (!cleanId || cleanId === '' || !cleanPw || cleanPw === '' || !cleanName || cleanName === '' || !ageInt) {
-        returnData.status = 4092;  // 유효하지 않은 입력
+        returnData.status = 4092;
         return returnData;
       }
 
-      // 이미 존재하는 사용자 검사
       const testUser = await models.user.findOne({
         where: { id: cleanId },
       });
 
       if (!testUser) {
-        // 새로운 사용자 생성
         const user = await models.user.create({
           id: cleanId,
           pw: cleanPw,
-          age: ageInt,
+          age: ageInt.toString(), // age를 문자열로 변환
           name: cleanName,
-          coin: 0,
-          plantLevel: 0,
+          coin: '0', // 문자열로 초기화
+          plantLevel: '0', // 문자열로 초기화
         });
 
-        // 초기 점수 생성
         await models.score.create({
           user_id: user.num,
           score: '0',
           date: new Date(),
         });
 
-        returnData.status = 4091;  // 성공
-        returnData.data = user;    // 생성된 사용자 반환
+        returnData.status = 4091;
+        returnData.data = user;
         return returnData;
       }
 
-      // 이미 존재하는 사용자
       returnData.status = 4094;
       return returnData;
     } catch (err) {
@@ -71,30 +65,26 @@ export default class UserService {
   async SignIn(userInfo) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
       const { id, pw } = userInfo;
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
       if (user.pw != pw) {
-        // 비밀번호 불일치
         returnData.status = 4093;
         return returnData;
       }
 
-      // 로그인 성공
       returnData.status = 4091;
       returnData.data = user;
       return returnData;
@@ -110,38 +100,33 @@ export default class UserService {
   async RecordScore(userId, score) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id: userId },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
-      // 새로운 점수 기록 생성
       await models.score.create({
         user_id: user.num,
-        score: String(score),
+        score: String(score), // 문자열로 변환
         date: new Date(),
       });
 
-      // 모든 점수 조회
       const allScores = await models.score.findAll({
         where: { user_id: user.num },
         order: [['date', 'DESC']],
       });
 
-      const topScores = allScores.slice(0, 3);  // 상위 3개의 점수 선택
-      const mostRecentScore = topScores[0];    // 가장 최근 점수
+      const topScores = allScores.slice(0, 3);
+      const mostRecentScore = topScores[0];
 
-      // 반환 데이터 설정
       returnData.status = 4091;
       returnData.data = {
         topScores: topScores.map(score => ({
@@ -167,26 +152,24 @@ export default class UserService {
   async DepositCoin(userId, amount) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id: userId },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
-      // 코인 적립
-      user.coin += amount;
+      const currentCoin = parseInt(user.coin, 10);
+      const newCoin = currentCoin + parseInt(amount, 10);
+      user.coin = newCoin.toString(); // 문자열로 저장
       await user.save();
 
-      // 반환 데이터 설정
       returnData.status = 4091;
       returnData.data = {
         userId: user.id,
@@ -206,32 +189,29 @@ export default class UserService {
   async UseCoin(userId, coinAmount) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id: userId },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
-      if (user.coin < coinAmount) {
-        // 코인이 부족함
+      const currentCoin = parseInt(user.coin, 10);
+      if (currentCoin < parseInt(coinAmount, 10)) {
         returnData.status = 4092;
         return returnData;
       }
 
-      // 코인 사용
-      user.coin -= coinAmount;
+      const newCoin = currentCoin - parseInt(coinAmount, 10);
+      user.coin = newCoin.toString(); // 문자열로 저장
       await user.save();
 
-      // 반환 데이터 설정
       returnData.status = 4091;
       returnData.data = {
         userId: user.id,
@@ -251,38 +231,35 @@ export default class UserService {
   async plantlevel(userId, action) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id: userId },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
+      let newPlantLevel = parseInt(user.plantLevel, 10);
+
       if (action === 'water') {
-        // 물 주기: 식물 레벨 1 증가
-        user.plantLevel += 1;
+        newPlantLevel += 1;
       } else if (action === 'fertilize') {
-        // 비료 주기: 식물 레벨 2 증가
-        user.plantLevel += 2;
+        newPlantLevel += 2;
       } else {
-        // 유효하지 않은 액션
         return {
           status: 4092,
           message: 'Invalid action',
         };
       }
 
+      user.plantLevel = newPlantLevel.toString(); // 문자열로 저장
       await user.save();
 
-      // 반환 데이터 설정
       returnData.status = 4091;
       returnData.data = {
         userId: user.id,
@@ -302,29 +279,25 @@ export default class UserService {
   async GetScores(userId) {
     try {
       const returnData = {
-        status: 4095,  // 기본 상태 코드
-        data: null,    // 반환할 데이터 초기화
+        status: 4095,
+        data: null,
       };
 
-      // 사용자 조회
       const user = await models.user.findOne({
         where: { id: userId },
       });
 
       if (!user) {
-        // 사용자를 찾을 수 없음
         returnData.status = 4092;
         return returnData;
       }
 
-      // 최신 점수 4개 조회
       const topScores = await models.score.findAll({
         where: { user_id: user.num },
         order: [['date', 'DESC']],
         limit: 4,
       });
 
-      // 반환 데이터 설정
       returnData.status = 4091;
       returnData.data = {
         topScores: topScores.map(score => ({
