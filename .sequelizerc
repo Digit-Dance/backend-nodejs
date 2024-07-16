@@ -1,0 +1,7 @@
+// sequelize설정을 위한 파일
+// 크게 건들 필요는 없지만 추후 migration을 할 경우 다시 건들 필요가 있다
+const path = require('path')
+
+module.exports = {
+    config: path.resolve('env', 'setting.js'),
+}

@@ -1,0 +1,17 @@
+# .env*
+dist
+package-lock.json
+node_modules
+.idea
+.vscode
+*.log
+yarn.lock
+config/config.json
+build
+logs
+/src/temp/
+.DS_Store
+.env.development
+
+
+prisma/docker-compose.local.yml
