@@ -197,6 +197,7 @@ export default class UserService {
       returnData.data = {
         userId: user.id,
         coins: user.coin,
+        amount: amountInt
       };
 
       return returnData;
