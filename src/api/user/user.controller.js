@@ -205,54 +205,56 @@ export default [
     },
 
     /**
-     * 코인 적립
-     */
+   * 코인 적립
+   */
 
     {
-        path: '/user/coin/deposit', // 코인 적립 API의 경로를 설정한다.
-        method: 'post', // HTTP 메소드를 POST로 설정한다.
-        middleware: [], // 사용할 미들웨어가 없음을 나타낸다.
-        controller: async (req, res, next) => {
-            try {
-                console.log('[User Score Controller Enter]');
-                const UserServiceInstance = Container.get(UserService);
-                const { userId, score } = req.body;
-                console.log('Received request:', req.body);
-        
-                const data = await UserServiceInstance.RecordScore(userId, score);
-                
-                let message = '';
-                switch (data.status) {
-                    case 4091:
-                        message = '점수 기록 성공';
-                        break;
-                    case 4092:
-                        message = '사용자 존재하지 않음';
-                        break;
-                    case 4093:
-                        message = '점수 기록 실패';
-                        break;
-                    default:
-                        message = '알 수 없는 오류 발생!';
-                        break;
-                }
-        
-                console.log('Response data:', data);
-                console.log('Response message:', message);
-        
-                return res.status(200).json({
-                    status: data.status,
-                    message: message,
-                    score: data.data ? data.data.score : null
-                });
-            } catch (err) {
-                console.error('[User Score Controller Error]', err);
-                return res.status(500).json({
-                    message: err.message
-                });
-            }
+    path: "/user/coin/deposit", // API 경로
+    method: "post", // HTTP 메서드
+    middleware: [], // 사용될 미들웨어 (현재는 없음)
+    controller: async (req, res, next) => {
+      // 비동기 컨트롤러 함수
+    try {
+        console.log("[User Score Controller Enter]");
+        const UserServiceInstance = Container.get(UserService);
+        const { userId, amount } = req.body;
+        console.log("Received request:", req.body);
+
+        const data = await UserServiceInstance.DepositCoin(userId, amount);
+
+        let message = "";
+        switch (data.status) {
+            case 4091:
+            message = "점수 기록 성공";
+            break;
+            case 4092:
+            message = "사용자 존재하지 않음";
+            break;
+            case 4093:
+            message = "점수 기록 실패";
+            break;
+            default:
+            message = "알 수 없는 오류 발생!";
+            break;
         }
+
+        console.log("Response data:", data);
+        console.log("Response message:", message);
+
+        return res.status(200).json({
+          // 성공적인 응답 반환
+            message,
+            ...data,
+        });
+    } catch (err) {
+        console.error("[User Score Controller Error]", err);
+        return res.status(500).json({
+            message: err.message,
+        });
+    }
     },
+},
+
     // 코인 사용 API
     {
         path: '/user/useCoin', // 코인 사용 API의 경로를 설정한다.
