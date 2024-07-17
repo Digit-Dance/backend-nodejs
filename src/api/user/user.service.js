@@ -362,12 +362,15 @@ export default class UserService {
         return returnData;
       }
 
-      let newPlantLevel = parseInt(user.plantLevel, 10); // 현재 식물 레벨을 정수로 변환
+      // 현재 식물 레벨 및 경험치를 정수로 변환
+      let newPlantLevel = parseInt(user.plantLevel, 10); 
+      let experience = parseInt(user.experience, 10) || 0;
 
+      // 액션에 따른 경험치 증가
       if (action === 'water') {
-        newPlantLevel += 1; // 물주기 액션 시 레벨 증가
+        experience += 20; // 물주기 액션 시 경험치 20 증가
       } else if (action === 'fertilize') {
-        newPlantLevel += 2; // 비료주기 액션 시 레벨 더 많이 증가
+        experience += 50; // 비료주기 액션 시 경험치 50 증가
       } else {
         return {
           status: 4092,
@@ -375,13 +378,22 @@ export default class UserService {
         };
       }
 
-      user.plantLevel = newPlantLevel.toString(); // 새로운 식물 레벨을 문자열로 저장
+      // 경험치가 100 이상이면 레벨 증가
+      while (experience >= 100) {
+        newPlantLevel += 1;
+        experience -= 100; // 경험치를 100만큼 차감
+      }
+
+      // 새로운 식물 레벨 및 경험치를 저장
+      user.plantLevel = newPlantLevel.toString();
+      user.experience = experience.toString();
       await user.save();
 
       returnData.status = 4091; // 성공 상태 코드
       returnData.data = {
         userId: user.id,
         plantLevel: user.plantLevel,
+        experience: user.experience,
       };
 
       return returnData;
