@@ -1,35 +1,69 @@
-import { Service, Inject } from 'typedi';
-import models from '../../models';
+import { Service, Inject } from 'typedi'; // typedi 라이브러리에서 Service와 Inject를 임포트한다.
+import models from '../../models'; // '../../models' 경로에서 models를 임포트한다.
 
-@Service()
 export default class UserService {
-  constructor() {}
-
+  // UserService 클래스를 정의하고 기본적으로 export한다.
+  constructor() {} // 빈 생성자를 정의한다.
+  
   /**
    * 회원가입
    */
   async SignUp(userInfo) {
+    // SignUp 메소드를 비동기로 정의하고 userInfo 매개변수를 받는다.
     try {
+      // 에러 처리를 위한 try 블록을 시작한다.
       const returnData = {
-        status: 4095, // 기본 상태 코드
-        data: null,
+        // 반환할 데이터 객체를 초기화한다.
+        status: 4095, // 기본 상태 코드를 4095로 설정한다.
+        data: null, // data 속성을 null로 초기화한다.
       };
 
-      const { id, pw, age, name } = userInfo;
-      const ageInt = parseInt(age, 10); // 나이를 정수로 변환
-      const cleanId = id.trim().replace(/\u200B/g, ''); // 아이디 입력값 정리
-      const cleanPw = pw.trim().replace(/\u200B/g, ''); // 비밀번호 입력값 정리
-      const cleanName = name.trim().replace(/\u200B/g, ''); // 이름 입력값 정리
+      // 구조 분해 할당을 이용하여 원하는 변수만 추출하여 사용할 수 있다.
+      const { id, pw, age, name } = userInfo; // userInfo 객체에서 id, pw, age를 추출한다.
 
-      // 입력값 유효성 검사
-      if (!cleanId || cleanId === '' || !cleanPw || cleanPw === '' || !cleanName || cleanName === '' || !ageInt) {
-        returnData.status = 4092; // 입력값 오류 상태 코드
-        return returnData;
+      // age를 int형으로 변환한다.
+      const ageInt = parseInt(age, 10);
+      const cleanId  = id.trim().replace(/\u200B/g, ''); // 아이디 입력값 정리
+      // 프론트에서 값이 제대로 넘어오지 않을 수 있기 때문에 이에 관한에러 처리를 해준다.
+      
+      // id 검사
+      if (!cleanId || cleanId === '') {
+        // id가 없는 경우
+        // 임의의 값을 정하여 에러 결과를 반환한다.
+        returnData.status = 4092; // 입력값 오류 상태 코드.
+        return returnData; // returnData 객체를 반환한다.
       }
 
+      // pw 검사
+      const cleanPw  = pw.trim().replace(/\u200B/g, ''); // 비밀번호 입력값 정리
+      if (!cleanPw || cleanPw === '') {
+        // pw가 없는 경우
+        returnData.status = 4093; // 상태 코드를 4093으로  설정한다.
+        return returnData; // returnData 객체를 반환한다.
+      }
+      // name 검사 
+      const cleanName  = name.trim().replace(/\u200B/g, ''); // 이름 입력값 정리
+      if (!cleanName || cleanName === '') {
+        // name이 없는 경우
+        returnData.status = 4096; // 상태 코드를 4094로 설정한다.
+        return returnData; // returnData 객체를 반환한다.
+      }
+
+      if (!ageInt) {
+        // age가 없는 경우
+        returnData.status = 4095; // 상태 코드를 4094로 설정한다.
+        return returnData; // returnData 객체를 반환한다.
+      }
+      
       // 기존 사용자 확인
       const testUser = await models.user.findOne({
-        where: { id: cleanId },
+        // id로 사용자 찾기
+        where: {
+          // 키 값과 변수 명이 같으므로 아래와 같이 콜론 없이도 사용할 수 있다.
+          // id
+          id: cleanId, // id를 조건으로 설정한다.
+          
+        },
       });
 
       if (!testUser) {
@@ -42,24 +76,26 @@ export default class UserService {
           coin: '0', // 코인을 문자열로 초기화
           plantLevel: '0', // 식물 레벨을 문자열로 초기화
         });
+        
+       // 사용자 점수 초기화
+      await models.score.create({
+        user_id: user.num,
+        score: '0',
+        date: new Date(),
+      });
 
-        // 사용자 점수 초기화
-        await models.score.create({
-          user_id: user.num,
-          score: '0',
-          date: new Date(),
-        });
-
-        returnData.status = 4091; // 성공 상태 코드
-        returnData.data = user;
-        return returnData;
+        returnData.status = 4091; // 상태 코드를 4091로 설정한다.
+        returnData.data = user; // 생성된 사용자 데이터를 설정한다.
+        return returnData; // returnData 객체를 반환한다.
       }
 
-      returnData.status = 4094; // 사용자 중복 상태 코드
-      return returnData;
+      returnData.status = 4094; // 사용자가 이미 존재하는 경우 상태 코드를 4094로 설정한다.
+      return returnData; // returnData 객체를 반환한다.
     } catch (err) {
-      console.log('[User] SignUp Service Error!' + err); // 에러 로그 출력
-      throw err;
+      // 에러가 발생한 경우
+      // 콘솔 메시지를 이용하여 개발자에게 어디에서 오류가 났는지 알려준다
+      console.log('[User] SignUp Service Error!' + err); // 에러 메시지를 콘솔에 출력한다.
+      throw err; // 에러를 다시 던진다.
     }
   }
 
@@ -67,40 +103,50 @@ export default class UserService {
    * 로그인
    */
   async SignIn(userInfo) {
+    // SignIn 메소드를 비동기로 정의하고 userInfo 매개변수를 받는다.
     try {
+      // 에러 처리를 위한 try 블록을 시작한다.
       const returnData = {
-        status: 4095, // 기본 상태 코드
-        data: null,
+        // 반환할 데이터 객체를 초기화한다.
+        status: 4095, // 기본 상태 코드를 4095로 설정한다.
+        data: null, // data 속성을 null로 초기화한다.
       };
 
-      const { id, pw } = userInfo;
+      const { id, pw } = userInfo; // userInfo 객체에서 id와 pw를 추출한다.
 
-      // 사용자 정보 확인
+      // id로 사용자 정보 확인
       const user = await models.user.findOne({
-        where: { id },
+        where: {
+          // 변수 명과 키 값이 같기 때문에 id: id을 아래와 같이 간단하게 작성 가능하다.
+          id, // id을 조건으로 설정한다.
+        },
       });
 
       if (!user) {
+        // 사용자가 없는 경우
         returnData.status = 4092; // 사용자 없음 상태 코드
-        return returnData;
+        return returnData; // returnData 객체를 반환한다.
       }
 
       if (user.pw != pw) {
+        // 비밀번호가 일치하지 않는 경우
         returnData.status = 4093; // 비밀번호 불일치 상태 코드
-        return returnData;
+        return returnData; // returnData 객체를 반환한다.
       }
 
-      returnData.status = 4091; // 성공 상태 코드
-      returnData.data = user;
-      return returnData;
+      returnData.status = 4091; // 성공 상태 코드.
+      returnData.data = user; // 사용자 데이터를 설정한다.
+
+      return returnData; // returnData 객체를 반환한다.
     } catch (err) {
-      console.log('[User] SignIn Service Error!' + err); // 에러 로그 출력
-      throw err;
+      // 에러가 발생한 경우
+      console.log('[User] SignIn Service Error!' + err); // 에러 메시지를 콘솔에 출력한다.
+      throw err; // 에러를 다시 던진다.
     }
   }
 
   /**
-   * 점수 기록
+   * Cognition 점수기록
    */
   async RecordScore(userId, score) {
     try {
@@ -111,13 +157,17 @@ export default class UserService {
 
       // 사용자 정보 확인
       const user = await models.user.findOne({
-        where: { id: userId },
+        where: {
+          id: userId,
+        },
       });
 
       if (!user) {
         returnData.status = 4092; // 사용자 없음 상태 코드
         return returnData;
       }
+
+
 
       // 새로운 점수 기록
       await models.score.create({
@@ -127,13 +177,16 @@ export default class UserService {
       });
 
       // 모든 점수 가져오기
+      // Fetch all scores for the user, sorted by date DESC to get the latest scores first
       const allScores = await models.score.findAll({
         where: { user_id: user.num },
         order: [['date', 'DESC']],
       });
 
-      // 상위 3개의 점수 가져오기
+      // Limit to top 3 latest scores
       const topScores = allScores.slice(0, 3);
+
+      // The most recent score is simply the first in the sorted list
       const mostRecentScore = topScores[0];
 
       returnData.status = 4091; // 성공 상태 코드
@@ -150,7 +203,50 @@ export default class UserService {
 
       return returnData;
     } catch (err) {
-      console.error('[User] RecordScore Service Error:', err.message); // 에러 로그 출력
+      console.error('[User] RecordScore Service Error:', err.message);
+      throw err;
+    }
+  }
+  /**
+   * Cognition Score 가져오기(최신순)
+   */
+  async GetScores(userId) {
+    try {
+      const returnData = {
+        status: 4095,
+        data: null,
+      };
+
+      const user = await models.user.findOne({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) {
+        returnData.status = 4092; // 사용자 없음 상태 코드
+        return returnData;
+      }
+
+      // 상위 4개의 점수 가져오기
+      // Fetch top 4 scores for the user, sorted by date DESC to get the latest scores first
+      const topScores = await models.score.findAll({
+        where: { user_id: user.num },
+        order: [['date', 'DESC']],
+        limit: 4
+      });
+
+      returnData.status = 4091; // 성공 상태 코드
+      returnData.data = {
+        topScores: topScores.map(score => ({
+          score: score.score,
+          date: score.date,
+        })),
+      };
+
+      return returnData;
+    } catch (err) {
+      console.error('[User] GetScores Service Error:', err.message);
       throw err;
     }
   }
@@ -301,45 +397,6 @@ export default class UserService {
     }
   }
 
-  /**
-   * Cognition Score 가져오기(최신순)
-   */
-  async GetScores(userId) {
-    try {
-      const returnData = {
-        status: 4095, // 기본 상태 코드
-        data: null,
-      };
 
-      // 사용자 정보 확인
-      const user = await models.user.findOne({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        returnData.status = 4092; // 사용자 없음 상태 코드
-        return returnData;
-      }
-
-      // 상위 4개의 점수 가져오기
-      const topScores = await models.score.findAll({
-        where: { user_id: user.num },
-        order: [['date', 'DESC']],
-        limit: 4,
-      });
-
-      returnData.status = 4091; // 성공 상태 코드
-      returnData.data = {
-        topScores: topScores.map(score => ({
-          score: score.score,
-          date: score.date,
-        })),
-      };
-
-      return returnData;
-    } catch (err) {
-      console.error('[User] GetScores Service Error:', err.message); // 에러 로그 출력
-      throw err;
-    }
-  }
+  
 }
