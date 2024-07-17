@@ -77,13 +77,7 @@ export default class UserService {
           plantLevel: '0', // 식물 레벨을 문자열로 초기화
         });
         
-       // 사용자 점수 초기화
-      await models.score.create({
-        user_id: user.num,
-        score: '0',
-        date: new Date(),
-      });
-
+      
         returnData.status = 4091; // 상태 코드를 4091로 설정한다.
         returnData.data = user; // 생성된 사용자 데이터를 설정한다.
         return returnData; // returnData 객체를 반환한다.
