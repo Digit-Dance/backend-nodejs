@@ -130,7 +130,13 @@ export default class UserService {
       }
 
       returnData.status = 4091; // 성공 상태 코드.
-      returnData.data = user; // 사용자 데이터를 설정한다.
+      returnData.data = {
+        id: user.id,
+        age: user.age,
+        coin: user.coin,
+        plantLevel: user.plantLevel,
+        experience: user.experience,
+      }; // 사용자 데이터를 설정한다.
 
       return returnData; // returnData 객체를 반환한다.
     } catch (err) {
