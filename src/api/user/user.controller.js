@@ -164,7 +164,7 @@ export default [
         }
     },
     /**
-     * 점수 조회
+     * 점수 조회(최신 4개 점수 조회)
      */
     {
         path: '/user/getScores',  // API 경로
@@ -333,6 +333,46 @@ export default [
                 });
             }
         }
-    }
+    },
+    /**
+     * 점수 조회(오래된 순서로 12개 조회)
+     */
+    {
+        path: '/user/getScores',  // API 경로
+        method: 'post', // HTTP 메서드
+        middleware: [], // 사용될 미들웨어 (현재는 없음)
+        controller: async (req, res, next) => { // 비동기 컨트롤러 함수
+        try {
+            console.log('[User GetScores Controller Enter]'); // 디버깅 메시지
+            const UserServiceInstance = Container.get(UserService); // UserService 인스턴스 가져오기
+            const { userId } = req.body; // 요청 본문에서 userId를 추출
+            const data = await UserServiceInstance.GetScoresOldDate(userId); // 점수 조회 처리
+    
+            let message = ''; // 메시지 변수 초기화
+            switch (data.status) { // 상태에 따른 메시지 설정
+            case 4091:
+                message = '점수 조회 성공';
+                break;
+            case 4092:
+                message = '사용자 존재하지 않음';
+                break;
+            default:
+                message = '알 수 없는 오류 발생!';
+                break;
+            }
+    
+            return res.status(200).json({ // 성공적인 응답 반환
+            message,
+            status: data.status,
+            data: data.data
+            });
+        } catch (err) { // 에러 처리
+            console.log(err);
+            return res.status(500).json({
+            message: err.message // 에러 메시지 반환
+            });
+        }
+        }
+    },
 ];
 

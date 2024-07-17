@@ -401,4 +401,47 @@ export default class UserService {
       return { status: 4093, message: error.message }; // 에러 상태 코드 반환
     }
   }
+
+  /**
+   * Cognition Score 오래된 날짜순으로 12개 가져오기
+   */
+  async GetScoresOldDate(userId) {
+    try {
+      const returnData = {
+        status: 4095,
+        data: null,
+      };
+
+      const user = await models.user.findOne({
+        where: {
+          id: userId,
+        },
+      });
+
+      if (!user) {
+        returnData.status = 4092; // 사용자 없음 상태 코드
+        return returnData;
+      }
+
+      // 상위 12개의 점수 가져오기
+      const topScores = await models.score.findAll({
+        where: { user_id: user.num },
+        order: [['date', 'ASC']],
+        limit: 12
+      });
+
+      returnData.status = 4091; // 성공 상태 코드
+      returnData.data = {
+        topScores: topScores.map(score => ({
+          score: score.score,
+          date: score.date,
+        })),
+      };
+
+      return returnData;
+    } catch (err) {
+      console.error('[User] GetScores Service Error:', err.message);
+      throw err;
+    }
+  }
 }
