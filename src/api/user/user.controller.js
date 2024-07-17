@@ -246,14 +246,15 @@ export default [
             message,
             ...data,
         });
-    } catch (err) {
+        } catch (err) {
         console.error("[User Score Controller Error]", err);
         return res.status(500).json({
             message: err.message,
         });
-    }
+        }
     },
-},
+    },
+
 
     // 코인 사용 API
     {
