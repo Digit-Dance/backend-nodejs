@@ -341,7 +341,7 @@ export default [
      * 점수 조회(오래된 순서로 12개 조회)
      */
     {
-        path: '/user/getScores',  // API 경로
+        path: '/user/getScoresOldDate',  // API 경로
         method: 'post', // HTTP 메서드
         middleware: [], // 사용될 미들웨어 (현재는 없음)
         controller: async (req, res, next) => { // 비동기 컨트롤러 함수
