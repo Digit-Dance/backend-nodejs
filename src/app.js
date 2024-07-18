@@ -48,7 +48,7 @@ const app = express();
 //     });
 // }
 
-app.disable('x-powered-by');
+// app.disable('x-powered-by');
 
 /*
   서버 cors설정
