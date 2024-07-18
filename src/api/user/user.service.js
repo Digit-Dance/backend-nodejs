@@ -41,7 +41,7 @@ export default class UserService {
         returnData.status = 4093; // 상태 코드를 4093으로  설정한다.
         return returnData; // returnData 객체를 반환한다.
       }
-      // name 검사 
+      // name 검사
       const cleanName  = name.trim().replace(/\u200B/g, ''); // 이름 입력값 정리
       if (!cleanName || cleanName === '') {
         // name이 없는 경우
@@ -122,10 +122,13 @@ export default class UserService {
         returnData.status = 4092; // 사용자 없음 상태 코드
         return returnData; // returnData 객체를 반환한다.
       }
-
-      if (user.pw != pw) {
+      // console.log(user.pw + " : " + pw); // 비밀번호 확인을 위한 디버깅 로그
+      
+      const cleanPw  = pw.trim().replace(/\u200B/g, ''); // 비밀번호 입력값 정리한 뒤 cleanPw에 저장하고 비교한다.
+      if (user.pw != cleanPw) {
         // 비밀번호가 일치하지 않는 경우
         returnData.status = 4093; // 비밀번호 불일치 상태 코드
+        // console.log("not pw");
         return returnData; // returnData 객체를 반환한다.
       }
 
