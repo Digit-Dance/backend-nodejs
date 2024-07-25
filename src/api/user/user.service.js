@@ -75,6 +75,7 @@ export default class UserService {
           coin: "0", // 코인을 문자열로 초기화
           plantLevel: "0", // 식물 레벨을 문자열로 초기화
           experience: "0",
+          depositCoin: 0
         });
 
         returnData.status = 4091; // 상태 코드를 4091로 설정한다.
@@ -290,6 +291,8 @@ export default class UserService {
       const amountInt = parseInt(amount, 10); // amount 값을 정수로 변환
       const currentCoin = parseInt(user.coin, 10); // 현재 코인을 정수로 변환
       const newCoin = currentCoin + amountInt; // 새로운 코인 값 계산
+      const depositCoin = currentCoin + amountInt; //랭킹을 위한 코인 적립
+      user.depositCoin = depositCoin; //랭킹을 위한 코인 적립
       user.coin = newCoin.toString(); // 코인을 문자열로 저장
       await user.save();
 
@@ -306,6 +309,33 @@ export default class UserService {
       return { status: 4093, message: error.message }; // 에러 상태 코드 반환
     }
   }
+
+  /**
+   * 랭킹 조회
+   */
+  async Rank(userId, depositCoin) {
+    try {
+      const returnData = {
+        status:4095,
+        data: null,
+      }
+      
+      if(!user){
+        returnData.status = 4092;
+        return returnData;
+      }
+
+      const topRank = await models.user.findAll({
+        order:[["rank","DESC"]],
+        limit: 3,
+      });
+      return topRank;
+    } catch(err) {
+      console.error("[User] RecordRank Service Error:", err.message);
+      throw err;
+    }
+  }
+
 
   /**
    * 코인 사용

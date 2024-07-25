@@ -43,6 +43,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING(255),
                 allowNull: false,
                 comment:'',
+            },
+            depositCoin: {
+                type: DataTypes.INTEGER,
+                allowNull:false,
+                comment:'랭킹을 위한 누적 코인',
             }
             
 

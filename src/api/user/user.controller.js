@@ -205,55 +205,55 @@ export default [
     },
 
     /**
-   * 코인 적립
-   */
+     * 코인 적립
+     */
 
-    {
-    path: "/user/coin/deposit", // API 경로
-    method: "post", // HTTP 메서드
-    middleware: [], // 사용될 미들웨어 (현재는 없음)
-    controller: async (req, res, next) => {
-      // 비동기 컨트롤러 함수
-    try {
-        console.log("[User Score Controller Enter]");
-        const UserServiceInstance = Container.get(UserService);
-        const { userId, amount } = req.body;
-        console.log("Received request:", req.body);
+        {
+        path: "/user/coin/deposit", // API 경로
+        method: "post", // HTTP 메서드
+        middleware: [], // 사용될 미들웨어 (현재는 없음)
+        controller: async (req, res, next) => {
+        // 비동기 컨트롤러 함수
+        try {
+            console.log("[User Score Controller Enter]");
+            const UserServiceInstance = Container.get(UserService);
+            const { userId, amount } = req.body;
+            console.log("Received request:", req.body);
 
-        const data = await UserServiceInstance.DepositCoin(userId, amount);
+            const data = await UserServiceInstance.DepositCoin(userId, amount);
 
-        let message = "";
-        switch (data.status) {
-            case 4091:
-            message = "점수 기록 성공";
-            break;
-            case 4092:
-            message = "사용자 존재하지 않음";
-            break;
-            case 4093:
-            message = "점수 기록 실패";
-            break;
-            default:
-            message = "알 수 없는 오류 발생!";
-            break;
-        }
+            let message = "";
+            switch (data.status) {
+                case 4091:
+                message = "점수 기록 성공";
+                break;
+                case 4092:
+                message = "사용자 존재하지 않음";
+                break;
+                case 4093:
+                message = "점수 기록 실패";
+                break;
+                default:
+                message = "알 수 없는 오류 발생!";
+                break;
+            }
 
-        console.log("Response data:", data);
-        console.log("Response message:", message);
+            console.log("Response data:", data);
+            console.log("Response message:", message);
 
-        return res.status(200).json({
-          // 성공적인 응답 반환
-            message,
-            ...data,
-        });
-        } catch (err) {
-        console.error("[User Score Controller Error]", err);
-        return res.status(500).json({
-            message: err.message,
-        });
-        }
-    },
-    },
+            return res.status(200).json({
+            // 성공적인 응답 반환
+                message,
+                ...data,
+            });
+            } catch (err) {
+            console.error("[User Score Controller Error]", err);
+            return res.status(500).json({
+                message: err.message,
+            });
+            }
+        },
+        },
 
 
     // 코인 사용 API
