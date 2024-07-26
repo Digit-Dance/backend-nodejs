@@ -254,7 +254,46 @@ export default [
             }
         },
         },
-
+    // 랭킹 조회 API
+    {
+        path: '/user/ranking',
+        method: 'get',
+        middleware: [],
+        controller: async (req, res, next) => {
+          try {
+            console.log('[User Ranking Controller Enter]'); // 디버깅 메시지
+            const UserServiceInstance = Container.get(UserService); // UserService 인스턴스 가져오기
+            const userId = req.query.userId; // 요청 쿼리에서 userId 추출
+      
+            const data = await UserServiceInstance.Rank(userId); // 랭킹 조회 처리
+      
+            let message = ''; // 메시지 변수 초기화
+            switch (data.status) { // 상태에 따른 메시지 설정
+              case 4091:
+                message = '랭킹 조회 성공';
+                break;
+              case 4092:
+                message = '사용자 존재하지 않음';
+                break;
+              default:
+                message = '알 수 없는 오류 발생!';
+                break;
+            }
+      
+            return res.status(200).json({ // 성공적인 응답 반환
+              message,
+              status: data.status,
+              data: data.data
+            });
+          } catch (err) { // 에러 처리
+            console.error('[User Ranking Controller Error]:', err);
+            return res.status(500).json({
+              message: err.message // 에러 메시지 반환
+            });
+          }
+        }
+      },
+      
 
     // 코인 사용 API
     {

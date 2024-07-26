@@ -313,28 +313,51 @@ export default class UserService {
   /**
    * 랭킹 조회
    */
-  async Rank(userId, depositCoin) {
+  async Rank(userId) {
     try {
       const returnData = {
-        status:4095,
+        status: 4095,
         data: null,
-      }
-      
-      if(!user){
-        returnData.status = 4092;
+      };
+
+      // 사용자 정보 확인
+      const user = await models.user.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        returnData.status = 4092; // 사용자 없음 상태 코드
         return returnData;
       }
 
+      // 상위 3명의 랭킹 사용자 조회
       const topRank = await models.user.findAll({
-        order:[["rank","DESC"]],
+        order: [["depositCoin", "DESC"]],
         limit: 3,
       });
-      return topRank;
-    } catch(err) {
+
+      // 요청한 사용자의 전체 랭킹 순위 계산
+      const userRank = await models.user.count({
+        where: {
+          depositCoin: {
+            $gt: user.depositCoin
+          }
+        }
+      }) + 1;
+
+      returnData.status = 4091;
+      returnData.data = {
+        topRank,
+        userRank: userRank <= 3 ? null : { rank: userRank, user: user }
+      };
+
+      return returnData;
+    } catch (err) {
       console.error("[User] RecordRank Service Error:", err.message);
       throw err;
     }
   }
+
 
 
   /**
